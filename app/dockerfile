@@ -1,0 +1,17 @@
+# Start from official PHP Apache image
+FROM php:8.2-apache
+
+# Install required dependencies for Node.js
+RUN apt-get update && apt-get install -y \
+    curl \
+    gnupg \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Verify installations
+RUN php -v && node -v && npm -v
+
+# Copy your PHP project into the container (optional)
+# COPY . /var/www/html

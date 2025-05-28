@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "dev": "tailwindcss -i style/main.css -o style/output.css --watch",
+    "build": "tailwindcss -i style/main.css -o style/output.css"
+  },
+  "dependencies": {
+    "tailwindcss": "^3.3.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.21"
+  }
+}
+

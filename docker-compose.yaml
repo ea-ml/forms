@@ -1,0 +1,29 @@
+services:
+  app:
+    container_name: app
+    build:
+      context: ./
+      dockerfile: ./app/dockerfile
+    ports:
+      - "8000:80"
+    volumes:
+      - ./app:/var/www/html
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: forms
+      MYSQL_USER: groober
+      MYSQL_PASSWORD: groober
+    volumes:
+      - db-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+volumes:
+  db-data:
