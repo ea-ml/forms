@@ -2719,3 +2719,4 @@ app/node_modules/yaml/types/pairs.js
 app/node_modules/yaml/types/set.js
 app/node_modules/yaml/types/timestamp.js
 app/package-lock.json
+app/style/output.css
