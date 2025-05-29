@@ -1,3 +1,7 @@
+<?php
+	session_start();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,7 +12,7 @@
 	<link rel="stylesheet" href="style/output.css">
 </head>
 
-<body class="bg-light flex flex-col items-center justify-center w-screen min-h-screen py-10">
+<body class="bg-light flex flex-col items-center justify-center py-10">
 	<div class="flex flex-col flex-auto">
 		<?php include 'script/survey_form.php'; ?>
 	</div>
