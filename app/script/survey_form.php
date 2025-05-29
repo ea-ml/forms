@@ -1,6 +1,16 @@
 <?php
 require_once 'generate_token.php';
+require_once 'get_hobbies.php';
+require_once 'get_nationalities.php';
+
+$hobbies = getHobbies();
+$nationalities = getNationalities();
 ?>
+<!-- Toastr dependencies -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
 <form id="surveyForm" action="script/submit_survey.php" method="POST" class="bg-secondary flex flex-col justify-between p-6 px-8 sm:px-12 border rounded-xl shadow-md gap-y-4">
     <!-- Hidden CSRF token field -->
     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
@@ -18,7 +28,7 @@ require_once 'generate_token.php';
                 maxlength="20"
                 pattern="[A-Za-z\s-]+"
                 title="Only letters, spaces, and hyphens are allowed"
-                oninput="this.value = this.value.replace(/[^A-Za-z\s-]/g, '')"
+                oninput="this.value = this.value.replace(/[^A-Za-z\s\-]/g, '')"
             >
             <span id="fnameError" class="text-sm text-red-600 hidden"></span>
         </div>
@@ -31,7 +41,7 @@ require_once 'generate_token.php';
                 maxlength="20"
                 pattern="[A-Za-z\s-]+"
                 title="Only letters, spaces, and hyphens are allowed"
-                oninput="this.value = this.value.replace(/[^A-Za-z\s-]/g, '')"
+                oninput="this.value = this.value.replace(/[^A-Za-z\s\-]/g, '')"
             >
             <span id="lnameError" class="text-sm text-red-600 hidden"></span>
         </div>
@@ -71,36 +81,25 @@ require_once 'generate_token.php';
     <div class="flex flex-col items-start justify-start w-full sm:w-auto gap-y-2">
         <span class="text-md text-accent select-none">Hobbies (Select at least one)</span>
         <div class="flex flex-col gap-y-2 mx-4">
+            <?php foreach ($hobbies as $hobby): ?>
             <div class="flex flex-row gap-x-1">
-                <input id="reading" type="checkbox" value="reading" name="hobbies[]"
+                <input 
+                    id="hobby_<?php echo htmlspecialchars($hobby['id'], ENT_QUOTES, 'UTF-8'); ?>" 
+                    type="checkbox" 
+                    value="<?php echo htmlspecialchars($hobby['name'], ENT_QUOTES, 'UTF-8'); ?>" 
+                    name="hobbies[]"
                     class="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-2"
-                    required>
-                <label for="reading" class="ms-2 text-sm font-medium text-gray-900">Reading</label>
+                    <?php echo $hobby === reset($hobbies) ? 'required' : ''; ?>
+                    <?php if ($hobby !== reset($hobbies)): ?>
+                    onclick="document.getElementById('hobby_<?php echo htmlspecialchars(reset($hobbies)['id'], ENT_QUOTES, 'UTF-8'); ?>').required = !document.querySelectorAll('input[name=\'hobbies[]\']:checked').length"
+                    <?php endif; ?>
+                >
+                <label 
+                    for="hobby_<?php echo htmlspecialchars($hobby['id'], ENT_QUOTES, 'UTF-8'); ?>" 
+                    class="ms-2 text-sm font-medium text-gray-900"
+                ><?php echo htmlspecialchars(ucfirst($hobby['name']), ENT_QUOTES, 'UTF-8'); ?></label>
             </div>
-            <div class="flex flex-row gap-x-1">
-                <input id="gaming" type="checkbox" value="gaming" name="hobbies[]"
-                    class="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-2"
-                    onclick="document.getElementById('reading').required = !this.checked">
-                <label for="gaming" class="ms-2 text-sm font-medium text-gray-900">Gaming</label>
-            </div>
-            <div class="flex flex-row gap-x-1">
-                <input id="sports" type="checkbox" value="sports" name="hobbies[]"
-                    class="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-2"
-                    onclick="document.getElementById('reading').required = !this.checked">
-                <label for="sports" class="ms-2 text-sm font-medium text-gray-900">Sports</label>
-            </div>
-            <div class="flex flex-row gap-x-1">
-                <input id="cooking" type="checkbox" value="cooking" name="hobbies[]"
-                    class="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-2"
-                    onclick="document.getElementById('reading').required = !this.checked">
-                <label for="cooking" class="ms-2 text-sm font-medium text-gray-900">Cooking</label>
-            </div>
-            <div class="flex flex-row gap-x-1">
-                <input id="traveling" type="checkbox" value="traveling" name="hobbies[]"
-                    class="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-2"
-                    onclick="document.getElementById('reading').required = !this.checked">
-                <label for="traveling" class="ms-2 text-sm font-medium text-gray-900">Traveling</label>
-            </div>
+            <?php endforeach; ?>
         </div>
         <span id="hobbiesError" class="text-sm text-red-600 hidden"></span>
     </div>
@@ -110,12 +109,11 @@ require_once 'generate_token.php';
         <select name="nationality" id="nationality" required
             class="w-full border-black rounded-xl bg-gray-100 p-2 px-4 text-md focus:ring-2  focus:outline-none">
             <option value="" disabled selected class="text-gray-400">Select your nationality</option>
-            <option value="japanese">Japanese</option>
-            <option value="filipino">Filipino</option>
-            <option value="american">American</option>
-            <option value="british">British</option>
-            <option value="australian">Australian</option>
-            <option value="others">Others</option>
+            <?php foreach ($nationalities as $nationality): ?>
+            <option value="<?php echo htmlspecialchars($nationality['name'], ENT_QUOTES, 'UTF-8'); ?>">
+                <?php echo htmlspecialchars(ucfirst($nationality['name']), ENT_QUOTES, 'UTF-8'); ?>
+            </option>
+            <?php endforeach; ?>
         </select>
         <span id="nationalityError" class="text-sm text-red-600 hidden"></span>
     </div>
@@ -161,10 +159,6 @@ require_once 'generate_token.php';
         <span id="suggestionsError" class="text-sm text-red-600 hidden"></span>
     </div>
 
-    <div id="formErrors" class="hidden text-red-700 px-4 py-3 rounded relative" role="alert">
-        <span id="errorMessage" class="block sm:inline"></span>
-    </div>
-
     <div class="flex flex-row items-center justify-end pt-5">
         <button type="submit" id="submitBtn" class="bg-accent text-white px-4 py-2 rounded-xl sm:flex-none flex-auto disabled:opacity-50 disabled:cursor-not-allowed">
             <span id="submitText">Submit</span>
@@ -173,148 +167,185 @@ require_once 'generate_token.php';
     </div>
 
     <script>
-        const stars = document.querySelectorAll('input[name="rating"]');
-        stars.forEach(star => {
-            star.addEventListener('change', (e) => {
-                const selectedValue = parseInt(e.target.value);
-                stars.forEach(s => {
-                    const value = parseInt(s.value);
-                    const label = document.querySelector(`label[for="star${value}"]`);
-                    if (value <= selectedValue) {
-                        label.classList.add('text-highlight');
-                    } else {
-                        label.classList.remove('text-highlight');
-                    }
+        // Constants and DOM Elements
+        const CSRF_REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutes
+        const ERROR_FIELDS = ['fname', 'lname', 'email', 'gender', 'hobbies', 'nationality', 'rating', 'suggestions'];
+        
+        const elements = {
+            form: document.querySelector('#surveyForm'),
+            submitBtn: document.getElementById('submitBtn'),
+            submitText: document.getElementById('submitText'),
+            loadingText: document.getElementById('loadingText'),
+            stars: document.querySelectorAll('input[name="rating"]'),
+            csrfToken: document.querySelector('input[name="csrf_token"]')
+        };
+
+        // Toastr Configuration
+        toastr.options = {
+            closeButton: true,
+            progressBar: true,
+            positionClass: "toast-top-right",
+            timeOut: 0
+        };
+
+        // Star Rating Handler
+        const handleStarRating = () => {
+            elements.stars.forEach(star => {
+                star.addEventListener('change', (e) => {
+                    const selectedValue = parseInt(e.target.value);
+                    elements.stars.forEach(s => {
+                        const value = parseInt(s.value);
+                        const label = document.querySelector(`label[for="star${value}"]`);
+                        label.classList.toggle('text-highlight', value <= selectedValue);
+                    });
                 });
             });
-        });
+        };
 
-        // Escape HTML function
-        function escapeHtml(unsafe) {
+        // Form Validation
+        const checkFormValidity = () => {
+            elements.submitBtn.disabled = !elements.form.checkValidity();
+        };
+
+        const setupFormValidation = () => {
+            elements.form.querySelectorAll('input, select').forEach(element => {
+                element.addEventListener('input', checkFormValidity);
+                element.addEventListener('change', checkFormValidity);
+            });
+        };
+
+        // Security and Data Sanitization
+        const escapeHtml = (unsafe) => {
             return unsafe
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
                 .replace(/>/g, "&gt;")
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
-        }
+        };
 
-        // Function to refresh CSRF token
-        async function refreshCsrfToken() {
-            try {
-                const response = await fetch('script/generate_token.php', {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-                const data = await response.json();
-                document.querySelector('input[name="csrf_token"]').value = data.csrf_token;
-            } catch (error) {
-                console.error('Failed to refresh CSRF token:', error);
-            }
-        }
-
-        // Sanitize form data before submission
-        function sanitizeFormData(formData) {
+        const sanitizeFormData = (formData) => {
             for (let [key, value] of formData.entries()) {
                 if (typeof value === 'string') {
                     formData.set(key, escapeHtml(value.trim()));
                 }
             }
             return formData;
-        }
-
-        const form = document.querySelector('#surveyForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const formErrors = document.getElementById('formErrors');
-        const errorMessage = document.getElementById('errorMessage');
-        const submitText = document.getElementById('submitText');
-        const loadingText = document.getElementById('loadingText');
-        
-        const checkFormValidity = () => {
-            const isValid = form.checkValidity();
-            submitBtn.disabled = !isValid;
         };
 
-        form.querySelectorAll('input, select').forEach(element => {
-            element.addEventListener('input', checkFormValidity);
-            element.addEventListener('change', checkFormValidity);
-        });
+        // CSRF Token Management
+        const refreshCsrfToken = async () => {
+            try {
+                const response = await fetch('script/generate_token.php', {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await response.json();
+                elements.csrfToken.value = data.csrf_token;
+            } catch (error) {
+                console.error('Failed to refresh CSRF token:', error);
+                toastr.error('Failed to refresh security token. Please reload the page.');
+            }
+        };
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            formErrors.classList.add('hidden');
-            const errorFields = ['fname', 'lname', 'email', 'gender', 'hobbies', 'nationality', 'rating', 'suggestions'];
-            errorFields.forEach(field => {
+        // Form State Management
+        const clearFieldErrors = () => {
+            ERROR_FIELDS.forEach(field => {
                 document.getElementById(`${field}Error`).classList.add('hidden');
             });
-            
-            submitBtn.disabled = true;
-            submitText.classList.add('hidden');
-            loadingText.classList.remove('hidden');
+        };
 
+        const toggleLoadingState = (isLoading) => {
+            elements.submitBtn.disabled = isLoading;
+            elements.submitText.classList.toggle('hidden', isLoading);
+            elements.loadingText.classList.toggle('hidden', !isLoading);
+        };
+
+        const resetForm = () => {
+            elements.form.reset();
+            elements.stars.forEach(s => {
+                const label = document.querySelector(`label[for="${s.id}"]`);
+                label.classList.remove('text-highlight');
+            });
+            document.querySelector('label[for="star1"]').classList.add('text-highlight');
+            checkFormValidity();
+        };
+
+        // Error Handling
+        const handleFieldErrors = (errors) => {
+            Object.entries(errors).forEach(([field, message]) => {
+                const errorElement = document.getElementById(`${field}Error`);
+                if (errorElement) {
+                    errorElement.textContent = escapeHtml(message);
+                    errorElement.classList.remove('hidden');
+                }
+            });
+        };
+
+        // Form Submission
+        const submitForm = async (formData) => {
             try {
-                const formData = new FormData(form);
-                const sanitizedFormData = sanitizeFormData(formData);
-                
-                const response = await fetch(form.action, {
+                const response = await fetch(elements.form.action, {
                     method: 'POST',
-                    body: sanitizedFormData,
+                    body: formData,
                     headers: {
                         'Accept': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
                     }
                 });
-
-                const result = await response.json();
-                
-                if (result.csrf_token) {
-                    document.querySelector('input[name="csrf_token"]').value = result.csrf_token;
-                }
-                
-                if (result.success) {
-                    form.reset();
-                    stars.forEach(s => {
-                        const label = document.querySelector(`label[for="${s.id}"]`);
-                        label.classList.remove('text-highlight');
-                    });
-                    document.querySelector('label[for="star1"]').classList.add('text-highlight');
-                } else {
-                    if (result.errors) {
-                        // Handle field-specific errors
-                        Object.entries(result.errors).forEach(([field, message]) => {
-                            const errorElement = document.getElementById(`${field}Error`);
-                            if (errorElement) {
-                                // Safely display error message
-                                errorElement.textContent = escapeHtml(message);
-                                errorElement.classList.remove('hidden');
-                            }
-                        });
-                        
-                        // Show general error message if present
-                        if (result.message) {
-                            errorMessage.textContent = escapeHtml(result.message);
-                            formErrors.classList.remove('hidden');
-                        }
-                    } else {
-                        errorMessage.textContent = escapeHtml(result.message || 'An error occurred. Please try again.');
-                        formErrors.classList.remove('hidden');
-                    }
-                }
+                return await response.json();
             } catch (error) {
-                errorMessage.textContent = 'An error occurred while submitting the form. Please try again.';
-                formErrors.classList.remove('hidden');
-            } finally {
-                submitBtn.disabled = false;
-                submitText.classList.remove('hidden');
-                loadingText.classList.add('hidden');
-                checkFormValidity();
+                throw new Error('Failed to submit form');
             }
-        });
+        };
 
-        setInterval(refreshCsrfToken, 15 * 60 * 1000);
+        const handleSubmissionResponse = (result) => {
+            if (result.csrf_token) {
+                elements.csrfToken.value = result.csrf_token;
+            }
 
-        checkFormValidity();
+            if (result.success) {
+                toastr.success(result.message || 'Survey submitted successfully!');
+                resetForm();
+            } else {
+                if (result.errors) {
+                    handleFieldErrors(result.errors);
+                    if (result.message) {
+                        toastr.error(result.message);
+                    }
+                } else {
+                    toastr.error(result.message || 'An error occurred. Please try again.');
+                }
+            }
+        };
+
+        // Main Form Handler
+        const handleFormSubmit = async (e) => {
+            e.preventDefault();
+            clearFieldErrors();
+            toggleLoadingState(true);
+
+            try {
+                const formData = new FormData(elements.form);
+                const sanitizedFormData = sanitizeFormData(formData);
+                const result = await submitForm(sanitizedFormData);
+                handleSubmissionResponse(result);
+            } catch (error) {
+                toastr.error('An error occurred while submitting the form. Please try again.');
+            } finally {
+                toggleLoadingState(false);
+            }
+        };
+
+        // Initialize Form
+        const initializeForm = () => {
+            handleStarRating();
+            setupFormValidation();
+            elements.form.addEventListener('submit', handleFormSubmit);
+            setInterval(refreshCsrfToken, CSRF_REFRESH_INTERVAL);
+            checkFormValidity();
+        };
+
+        // Start the application
+        initializeForm();
     </script>
 </form>
