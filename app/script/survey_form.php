@@ -58,8 +58,20 @@ $nationalities = getNationalities();
         <span id="emailError" class="text-sm text-red-600 hidden"></span>
     </div>
 
-    <div class="flex flex-col items-start justify-start w-full sm:w-auto gap-y-2">
+    <div class="flex flex-col items-start justify-start w-full sm:w-auto">
+        <label for="age" class="text-md text-accent select-none">Age</label>
+        <input name="age" type="number"
+            class="border-black rounded-xl bg-gray-100 p-2 px-4 text-md focus:ring-2 focus:ring-blue-500 focus:outline-none placeholder-black/30 w-full"
+            placeholder="25" required
+            min="1"
+            max="99"
+            title="Please enter your age (between 1 and 150)"
+            oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+        >
+        <span id="ageError" class="text-sm text-red-600 hidden"></span>
+    </div>
 
+    <div class="flex flex-col items-start justify-start w-full sm:w-auto gap-y-2">
         <span class="text-md text-accent select-none">Gender</span>
         <div class="flex flex-col gap-y-2 mx-4">
             <div class="flex flex-row gap-x-1">
@@ -76,6 +88,25 @@ $nationalities = getNationalities();
             </div>
         </div>
         <span id="genderError" class="text-sm text-red-600 hidden"></span>
+    </div>
+
+    <div class="flex flex-col items-start justify-start w-full sm:w-auto gap-y-2">
+        <span class="text-md text-accent select-none">Do you have a personal computer?</span>
+        <div class="flex flex-col gap-y-2 mx-4">
+            <div class="flex flex-row gap-x-1">
+                <input id="pc_yes" type="radio" value="1" name="has_pc"
+                    class="w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-2"
+                    required>
+                <label for="pc_yes" class="ms-2 text-sm font-medium text-gray-900">Yes</label>
+            </div>
+            <div class="flex flex-row gap-x-1">
+                <input id="pc_no" type="radio" value="0" name="has_pc"
+                    class="w-4 h-4 text-primary bg-gray-100 border-gray-300"
+                    required>
+                <label for="pc_no" class="ms-2 text-sm font-medium text-gray-900">No</label>
+            </div>
+        </div>
+        <span id="has_pcError" class="text-sm text-red-600 hidden"></span>
     </div>
 
     <div class="flex flex-col items-start justify-start w-full sm:w-auto gap-y-2">

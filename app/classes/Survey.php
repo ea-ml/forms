@@ -4,7 +4,7 @@ class Survey {
     private $db;
     private $data;
     private $errors = [];
-    private $requiredFields = ['fname', 'lname', 'email', 'gender', 'nationality', 'rating'];
+    private $requiredFields = ['fname', 'lname', 'email', 'age', 'gender', 'nationality', 'rating', 'has_pc'];
 
     public function __construct(array $data) {
         $this->db = Database::getInstance();
@@ -30,8 +30,10 @@ class Survey {
         $this->validateRequired()
              ->validateNames()
              ->validateEmail()
+             ->validateAge()
              ->validateGender()
              ->validateNationality()
+             ->validateHasPC()
              ->validateRating()
              ->validateHobbies()
              ->validateSuggestions()
@@ -75,6 +77,16 @@ class Survey {
         return $this;
     }
 
+    private function validateAge() {
+        if (isset($this->data['age'])) {
+            $age = intval($this->data['age']);
+            if ($age < 1 || $age > 100) {
+                $this->errors['age'] = 'Age must be between 1 and 99';
+            }
+        }
+        return $this;
+    }
+
     private function validateGender() {
         if (isset($this->data['gender']) && !in_array($this->data['gender'], ['male', 'female'], true)) {
             $this->errors['gender'] = 'Gender must be either male or female';
@@ -87,6 +99,16 @@ class Survey {
             $result = $this->db->fetch("SELECT id FROM nationalities WHERE name = ?", [$this->data['nationality']]);
             if (!$result) {
                 $this->errors['nationality'] = 'Invalid nationality selected';
+            }
+        }
+        return $this;
+    }
+
+    private function validateHasPC() {
+        if (isset($this->data['has_pc'])) {
+            $hasPC = filter_var($this->data['has_pc'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if ($hasPC === null) {
+                $this->errors['has_pc'] = 'Please select whether you have a personal computer';
             }
         }
         return $this;
@@ -156,7 +178,9 @@ class Survey {
                 'fname' => $this->data['fname'],
                 'lname' => $this->data['lname'],
                 'email' => $this->data['email'],
+                'age' => intval($this->data['age']),
                 'gender' => $this->data['gender'],
+                'has_pc' => filter_var($this->data['has_pc'], FILTER_VALIDATE_BOOLEAN),
                 'nationality_id' => $this->db->fetch(
                     "SELECT id FROM nationalities WHERE name = ?",
                     [$this->data['nationality']]

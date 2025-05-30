@@ -4,6 +4,8 @@ require_once 'get_gender_stats.php';
 require_once 'get_rating_stats.php';
 require_once 'get_daily_responses.php';
 require_once 'get_nationality_stats.php';
+require_once 'get_age_stats.php';
+require_once 'get_pc_stats.php';
 
 $hobbyStats = getHobbyStats();
 $labels = array_column($hobbyStats, 'name');
@@ -22,6 +24,14 @@ $responseCounts = array_column($dailyResponses, 'count');
 $nationalityStats = getNationalityStats();
 $nationalityLabels = array_map('ucfirst', array_column($nationalityStats, 'name'));
 $nationalityCounts = array_column($nationalityStats, 'count');
+
+$ageStats = getAgeStats();
+$ageLabels = array_column($ageStats, 'range');
+$ageCounts = array_column($ageStats, 'count');
+
+$pcStats = getPCStats();
+$pcLabels = array_column($pcStats, 'has_pc');
+$pcCounts = array_column($pcStats, 'count');
 ?>
 
 <!DOCTYPE html>
@@ -62,6 +72,20 @@ $nationalityCounts = array_column($nationalityStats, 'count');
                 <h2 class="text-2xl font-bold text-accent mb-6 text-center">Nationality Distribution</h2>
                 <div class="bg-white p-4 rounded-lg shadow-inner">
                     <canvas id="nationalityChart"></canvas>
+                </div>
+            </div>
+
+            <div class="p-6 bg-secondary rounded-xl shadow-md">
+                <h2 class="text-2xl font-bold text-accent mb-6 text-center">Age Distribution</h2>
+                <div class="bg-white p-4 rounded-lg shadow-inner">
+                    <canvas id="ageChart"></canvas>
+                </div>
+            </div>
+
+            <div class="p-6 bg-secondary rounded-xl shadow-md">
+                <h2 class="text-2xl font-bold text-accent mb-6 text-center">Personal Computer Ownership</h2>
+                <div class="bg-white p-4 rounded-lg shadow-inner">
+                    <canvas id="pcChart"></canvas>
                 </div>
             </div>
 
@@ -251,6 +275,72 @@ $nationalityCounts = array_column($nationalityStats, 'count');
                     borderColor: [
                         'rgba(99, 102, 241, 1)',
                         'rgba(236, 72, 153, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                }
+            }
+        });
+
+        // Age Bar Chart
+        const ageCtx = document.getElementById('ageChart').getContext('2d');
+        new Chart(ageCtx, {
+            type: 'bar',
+            data: {
+                labels: <?php echo json_encode($ageLabels); ?>,
+                datasets: [{
+                    label: 'Number of Respondents',
+                    data: <?php echo json_encode($ageCounts); ?>,
+                    backgroundColor: 'rgba(99, 102, 241, 0.8)',
+                    borderColor: 'rgba(99, 102, 241, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+
+        // PC Ownership Pie Chart
+        const pcCtx = document.getElementById('pcChart').getContext('2d');
+        new Chart(pcCtx, {
+            type: 'pie',
+            data: {
+                labels: <?php echo json_encode($pcLabels); ?>,
+                datasets: [{
+                    data: <?php echo json_encode($pcCounts); ?>,
+                    backgroundColor: [
+                        'rgba(99, 102, 241, 0.8)',
+                        'rgba(239, 68, 68, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(99, 102, 241, 1)',
+                        'rgba(239, 68, 68, 1)'
                     ],
                     borderWidth: 1
                 }]
